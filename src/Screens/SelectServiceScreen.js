@@ -1,22 +1,44 @@
 // src/Screens/SelectServiceScreen.js
 import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // Usando MaterialIcons para ícones
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // Usando MaterialCommunityIcons para ícones adicionais
-import styles from '../styles/selectServiceStyles'; // Seu arquivo de estilo personalizado
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import styles from '../styles/selectServiceStyles';
 
 const SelectServiceScreen = ({ navigation }) => {
   const [expandedService, setExpandedService] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState([]); // Estado para múltiplas seleções
 
   const toggleServiceOptions = (service) => {
     setExpandedService(expandedService === service ? null : service);
   };
 
+  const toggleOption = (option) => {
+    if (selectedOptions.includes(option)) {
+      // Se a opção já estiver selecionada, removê-la
+      setSelectedOptions(selectedOptions.filter(item => item !== option));
+    } else {
+      // Se a opção não estiver selecionada, adicioná-la
+      setSelectedOptions([...selectedOptions, option]);
+    }
+  };
+
+  const handleNext = () => {
+    if (selectedOptions.length > 0) {
+      navigation.navigate('ProblemDetailsScreen', { selectedProblems: selectedOptions });
+    } else {
+      alert('Por favor, selecione pelo menos um serviço.');
+    }
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>SELECIONE O SERVIÇO</Text>
 
-      {/* Lista de Serviços */}
       <View style={styles.serviceContainer}>
         {/* Serviço: Árvores e Vegetação */}
         <Pressable style={styles.serviceButton} onPress={() => toggleServiceOptions('arvores')}>
@@ -26,17 +48,25 @@ const SelectServiceScreen = ({ navigation }) => {
         </Pressable>
         {expandedService === 'arvores' && (
           <View style={styles.optionsContainer}>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Árvore caída na via</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('ArvoreCaida')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('ArvoreCaida') ? '🔘 ' : '⚪ '}Árvore caída na via
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Árvore com galhos baixos ou podres</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('GalhosBaixos')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('GalhosBaixos') ? '🔘 ' : '⚪ '}Árvore com galhos baixos ou podres
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Interferência de raízes na calçada ou via</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('RaizesCalcada')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('RaizesCalcada') ? '🔘 ' : '⚪ '}Interferência de raízes na calçada ou via
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Invasão de vegetação na via</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('VegetacaoVia')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('VegetacaoVia') ? '🔘 ' : '⚪ '}Invasão de vegetação na via
+              </Text>
             </Pressable>
           </View>
         )}
@@ -49,11 +79,15 @@ const SelectServiceScreen = ({ navigation }) => {
         </Pressable>
         {expandedService === 'pavimentacao' && (
           <View style={styles.optionsContainer}>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Buraco na pavimentação</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('BuracoPavimentacao')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('BuracoPavimentacao') ? '🔘 ' : '⚪ '}Buraco na pavimentação
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Calçada quebrada</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('CalcadaQuebrada')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('CalcadaQuebrada') ? '🔘 ' : '⚪ '}Calçada quebrada
+              </Text>
             </Pressable>
           </View>
         )}
@@ -66,11 +100,15 @@ const SelectServiceScreen = ({ navigation }) => {
         </Pressable>
         {expandedService === 'sinalizacao' && (
           <View style={styles.optionsContainer}>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Semáforo com defeito</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('SemaforoDefeito')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('SemaforoDefeito') ? '🔘 ' : '⚪ '}Semáforo com defeito
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Placa de trânsito danificada</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('PlacaDanificada')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('PlacaDanificada') ? '🔘 ' : '⚪ '}Placa de trânsito danificada
+              </Text>
             </Pressable>
           </View>
         )}
@@ -83,11 +121,15 @@ const SelectServiceScreen = ({ navigation }) => {
         </Pressable>
         {expandedService === 'servicosPublicos' && (
           <View style={styles.optionsContainer}>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Vazamento de água</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('VazamentoAgua')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('VazamentoAgua') ? '🔘 ' : '⚪ '}Vazamento de água
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Problemas com iluminação pública</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('IluminacaoPublica')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('IluminacaoPublica') ? '🔘 ' : '⚪ '}Problemas com iluminação pública
+              </Text>
             </Pressable>
           </View>
         )}
@@ -100,11 +142,15 @@ const SelectServiceScreen = ({ navigation }) => {
         </Pressable>
         {expandedService === 'naturaisAmbientais' && (
           <View style={styles.optionsContainer}>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Deslizamento de terra</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('DeslizamentoTerra')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('DeslizamentoTerra') ? '🔘 ' : '⚪ '}Deslizamento de terra
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Poluição do ar ou água</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('Poluicao')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('Poluicao') ? '🔘 ' : '⚪ '}Poluição do ar ou água
+              </Text>
             </Pressable>
           </View>
         )}
@@ -117,11 +163,15 @@ const SelectServiceScreen = ({ navigation }) => {
         </Pressable>
         {expandedService === 'transitoMobilidade' && (
           <View style={styles.optionsContainer}>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Congestionamento</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('Congestionamento')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('Congestionamento') ? '🔘 ' : '⚪ '}Congestionamento
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Faixa de pedestre apagada</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('FaixaPedestre')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('FaixaPedestre') ? '🔘 ' : '⚪ '}Faixa de pedestre apagada
+              </Text>
             </Pressable>
           </View>
         )}
@@ -134,11 +184,15 @@ const SelectServiceScreen = ({ navigation }) => {
         </Pressable>
         {expandedService === 'saudeSeguranca' && (
           <View style={styles.optionsContainer}>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Posto de saúde fechado</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('PostoFechado')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('PostoFechado') ? '🔘 ' : '⚪ '}Posto de saúde fechado
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Falta de medicamentos</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('FaltaMedicamentos')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('FaltaMedicamentos') ? '🔘 ' : '⚪ '}Falta de medicamentos
+              </Text>
             </Pressable>
           </View>
         )}
@@ -151,11 +205,15 @@ const SelectServiceScreen = ({ navigation }) => {
         </Pressable>
         {expandedService === 'outrosProblemas' && (
           <View style={styles.optionsContainer}>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Coleta de lixo não realizada</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('ColetaLixo')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('ColetaLixo') ? '🔘 ' : '⚪ '}Coleta de lixo não realizada
+              </Text>
             </Pressable>
-            <Pressable style={styles.optionButton}>
-              <Text style={styles.optionText}>Outros problemas diversos</Text>
+            <Pressable style={styles.optionButton} onPress={() => toggleOption('OutrosProblemasDiversos')}>
+              <Text style={styles.optionText}>
+                {selectedOptions.includes('OutrosProblemasDiversos') ? '🔘 ' : '⚪ '}Outros problemas diversos
+              </Text>
             </Pressable>
           </View>
         )}
@@ -164,7 +222,7 @@ const SelectServiceScreen = ({ navigation }) => {
       {/* Botão Próxima */}
       <Pressable
         style={styles.nextButton}
-        onPress={() => navigation.navigate('NextScreen')}
+        onPress={handleNext}
       >
         <Text style={styles.buttonText}>PRÓXIMA</Text>
       </Pressable>

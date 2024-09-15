@@ -1,20 +1,36 @@
 // src/styles/editProfileStyles.js
 import { StyleSheet } from 'react-native';
 
+const colors = {
+  primary: '#007bff',
+  secondary: '#6A1B9A',
+  lightGray: '#F0F0F0',
+  darkGray: '#333333',
+  mediumGray: '#666666',
+  border: '#dddddd',
+  white: '#ffffff',
+};
+
+const commonStyles = {
+  borderRadius: 5,
+  padding: 10,
+  fontSize: 16,
+};
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.white,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: '#333333',
+    color: colors.darkGray,
   },
   photoContainer: {
     alignItems: 'center',
@@ -24,24 +40,22 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: colors.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
   },
   uploadText: {
     fontSize: 14,
-    color: '#666',
+    color: colors.mediumGray,
   },
   input: {
     width: '100%',
-    padding: 10,
-    borderColor: '#ddd',
+    ...commonStyles,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 5,
     marginBottom: 15,
-    fontSize: 16,
-    color: '#333',
+    color: colors.darkGray,
   },
   inputIconContainer: {
     flexDirection: 'row',
@@ -54,18 +68,16 @@ const styles = StyleSheet.create({
   },
   inputWithIcon: {
     flex: 1,
-    padding: 10,
-    borderColor: '#ddd',
+    ...commonStyles,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 5,
-    fontSize: 16,
-    color: '#333',
+    color: colors.darkGray,
   },
   uploadButtonSmall: {
     marginLeft: 10,
     padding: 5,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 5,
+    backgroundColor: colors.lightGray,
+    borderRadius: commonStyles.borderRadius,
   },
   inlineInputs: {
     flexDirection: 'row',
@@ -81,16 +93,16 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   addButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: colors.primary,
     paddingVertical: 12,
-    borderRadius: 5,
+    borderRadius: commonStyles.borderRadius,
     alignItems: 'center',
     marginTop: 20,
     width: '100%',
   },
   addButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
+    color: colors.white,
+    fontSize: commonStyles.fontSize,
     fontWeight: 'bold',
   },
 });

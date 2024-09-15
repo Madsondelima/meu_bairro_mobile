@@ -17,9 +17,9 @@ const homeStyles = StyleSheet.create({
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.15, // Aumenta a opacidade para melhorar o contraste
+    shadowOpacity: 0.2, // Aumenta um pouco mais a opacidade para melhorar o contraste
     shadowRadius: 6,
-    elevation: 6, // Aumenta a elevação para mais profundidade
+    elevation: 6, // Mantém a elevação alta para mais profundidade
   },
   title: {
     fontSize: 24,
@@ -42,9 +42,9 @@ const homeStyles = StyleSheet.create({
     paddingVertical: 15,
     backgroundColor: '#e6f2ff',
     borderRadius: 10,
-    shadowColor: '#000', // Adiciona uma sombra leve aos botões de ícone
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15, // Aumenta a opacidade da sombra dos botões de ícone
     shadowRadius: 4,
     elevation: 3,
   },
@@ -59,14 +59,15 @@ const homeStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
+    marginBottom: 10, // Adiciona um pouco mais de espaçamento inferior
     paddingVertical: 10,
     paddingHorizontal: 20,
     backgroundColor: '#007bff',
     borderRadius: 10,
-    shadowColor: '#000', // Adiciona sombra ao botão de logout
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
+    shadowOpacity: 0.2, // Aumenta um pouco mais a opacidade para melhorar o contraste
+    shadowRadius: 4,
     elevation: 4,
   },
   logoutText: {

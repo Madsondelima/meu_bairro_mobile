@@ -1,4 +1,3 @@
-// src/styles/loginStyles.js
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -22,10 +21,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   logo: {
-    width: 100, // Defina o tamanho desejado para o logo
+    width: 100, 
     height: 100,
     marginBottom: 20,
-    borderRadius: 50, // Torna a imagem redonda (se for quadrada)
+    borderRadius: 50,
   },
   title: {
     fontSize: 24,
@@ -109,7 +108,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   errorText: {
-    color: '#ff0000', // Vermelho para mensagens de erro
+    color: '#ff0000', 
     fontSize: 14,
     marginBottom: 10,
   },

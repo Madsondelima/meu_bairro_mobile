@@ -3,7 +3,6 @@ import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
     paddingVertical: 20,
     paddingHorizontal: 20,
     backgroundColor: '#f0f4f7',
@@ -17,6 +16,7 @@ const styles = StyleSheet.create({
   },
   serviceContainer: {
     marginBottom: 10,
+    width: '100%', // Garante que o container ocupe toda a largura
   },
   serviceButton: {
     flexDirection: 'row',

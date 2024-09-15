@@ -1,4 +1,4 @@
-// src/styles/profileStyles.js
+// src/styles/requestDetailsStyles.js
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -21,81 +21,63 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 6,
   },
-  headerText: {
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
     color: '#333333',
   },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 15,
-  },
-  profileName: {
+  subtitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 15,
     textAlign: 'center',
     color: '#555555',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    color: '#333333',
+  fieldContainer: {
+    width: '100%',
+    marginBottom: 10,
   },
-  bioTextInput: {
-    width: '100%', // Usa toda a largura disponível do contêiner
+  label: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333333',
+    marginBottom: 5,
+  },
+  input: {
+    backgroundColor: '#e6f2ff',
+    borderColor: '#cccccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 14,
+    color: '#333333',
+    textAlignVertical: 'center',
+  },
+  inputMultiline: {
     backgroundColor: '#e6f2ff',
     borderColor: '#cccccc',
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
     height: 100,
-    marginBottom: 20,
-    textAlignVertical: 'top',
     fontSize: 14,
-    lineHeight: 20,
     color: '#333333',
+    textAlignVertical: 'top',
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 20,
-  },
-  button: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 10,
-    marginHorizontal: 5,
+  homeButton: {
+    marginTop: 20,
     backgroundColor: '#007bff',
-    borderRadius: 8,
+    padding: 10,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  imageGallery: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  galleryImage: {
-    width: '30%',
-    height: 100,
-    borderRadius: 8,
-    marginBottom: 10,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });
 

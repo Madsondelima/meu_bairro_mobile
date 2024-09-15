@@ -29,7 +29,10 @@ const EditProfileScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView
+      style={{ flex: 1 }} // Garantir que o ScrollView ocupe todo o espaço disponível
+      keyboardShouldPersistTaps="handled" // Garante que o teclado não interfere na rolagem
+    >
       <View style={styles.container}>
         <Text style={styles.title}>EDITAR PERFIL</Text>
         
@@ -137,7 +140,7 @@ const EditProfileScreen = ({ navigation }) => {
         {/* Botão de Adicionar */}
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => navigation.navigate('ProfileScreen')} // Navegação para a tela de perfil
+          onPress={handleSaveProfile} // Chama a função de salvar perfil
         >
           <Text style={styles.addButtonText}>ADICIONAR</Text>
         </TouchableOpacity>
