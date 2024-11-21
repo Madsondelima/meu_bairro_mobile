@@ -1,12 +1,10 @@
-// src/context/ImageContext.js
 import React, { createContext, useState } from 'react';
 
-// Criação do contexto
+// Cria o contexto de imagens
 export const ImageContext = createContext();
 
-// Componente provedor do contexto
 export const ImageProvider = ({ children }) => {
-  const [images, setImages] = useState([]); // Estado para armazenar imagens
+  const [images, setImages] = useState([]);
 
   return (
     <ImageContext.Provider value={{ images, setImages }}>

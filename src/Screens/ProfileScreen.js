@@ -1,18 +1,18 @@
-// src/Screens/ProfileScreen.js
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, TextInput } from 'react-native';
-import styles from '../styles/profileStyles'; 
+import profileStyles from '../styles/profileStyles'; 
+import { useColorTheme } from '../context/ColorContext';
 
 const ProfileScreen = ({ navigation }) => {
-  // Estado para armazenar o texto da biografia
+  const { colors } = useColorTheme(); 
+  const styles = profileStyles(colors); 
+
   const [bioText, setBioText] = useState(
     'Apaixonado por tecnologia e inovação, Pedro Ferreira é um desenvolvedor de software com mais de 5 anos de experiência.'
   );
 
-  // Limite de caracteres da biografia
   const maxLength = 120;
 
-  // Função para manipular a alteração do texto da biografia
   const handleBioChange = (text) => {
     if (text.length <= maxLength) {
       setBioText(text);
@@ -22,17 +22,17 @@ const ProfileScreen = ({ navigation }) => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        <Text style={styles.headerText}>Pedro Ferreira</Text>
         <Image 
           style={styles.profileImage}
           source={require('../../assets/profile.png')} 
         />
+        <Text style={styles.headerText}>Pedro Ferreira</Text>
         <Text style={styles.profileName}>
-          Pedro Ferreira: Entusiasta de tecnologia | Desenvolvedor de Software | Aventureiro nas horas vagas
+          Entusiasta de tecnologia | Desenvolvedor de Software | Aventureiro nas horas vagas
         </Text>
+        
         <Text style={styles.sectionTitle}>BIOGRAFIA</Text>
-
-        {/* Campo de entrada de texto com limite de caracteres */}
+        
         <TextInput
           style={styles.bioTextInput}
           multiline
@@ -40,9 +40,13 @@ const ProfileScreen = ({ navigation }) => {
           onChangeText={handleBioChange}
           maxLength={maxLength}
           placeholder="Digite sua biografia aqui..."
+          placeholderTextColor={colors.placeholderText}
         />
+        
+        <Text style={styles.characterCount}>
+          {bioText.length}/{maxLength} caracteres
+        </Text>
 
-        {/* Botões de Navegação */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
             style={styles.button} 
@@ -59,7 +63,6 @@ const ProfileScreen = ({ navigation }) => {
         </View>
 
         <Text style={styles.sectionTitle}>Minhas Imagens</Text>
-        {/* Aqui você pode adicionar uma lista de imagens ou um componente de galeria */}
         <View style={styles.imageGallery}>
           <Image source={require('../../assets/image1.png')} style={styles.galleryImage} />
           <Image source={require('../../assets/image2.png')} style={styles.galleryImage} />

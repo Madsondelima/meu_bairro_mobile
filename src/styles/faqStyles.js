@@ -1,57 +1,64 @@
-// src/styles/faqStyles.js
 import { StyleSheet } from 'react-native';
 
-const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 20,
-    backgroundColor: '#f0f4f7', // Cor de fundo consistente com outras telas
-  },
-  container: {
-    width: '90%',
-    backgroundColor: '#ffffff',
-    borderRadius: 15,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#333333', // Cor de texto para o título
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#555555', // Cor de texto para a descrição
-    textAlign: 'left',
-    marginBottom: 20,
-  },
-  homeButton: {
-    marginTop: 20,
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  homeButtonText: {
-    fontSize: 20,
-    color: '#ffffff',
-  },
-});
+const faqStyles = (colors) =>
+  StyleSheet.create({
+    container: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 20,
+      textAlign: 'center',
+    },
+    faqContainer: {
+      width: '100%',
+      backgroundColor: colors.cardBackground || '#f5f5f5',
+      borderRadius: 15,
+      padding: 15,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      elevation: 4,
+    },
+    question: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.primary || '#333',
+      marginBottom: 8,
+    },
+    answer: {
+      fontSize: 14,
+      color: colors.text,
+      marginBottom: 15,
+      lineHeight: 20,
+    },
+    backButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.buttonBackground || '#007bff',
+      borderRadius: 25,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      marginTop: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 5,
+      elevation: 8,
+    },
+    backButtonText: {
+      color: colors.buttonText || '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+      marginLeft: 10,
+    },
+  });
 
-export default styles;
+export default faqStyles;

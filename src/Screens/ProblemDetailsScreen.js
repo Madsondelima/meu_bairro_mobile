@@ -1,18 +1,37 @@
-// src/Screens/ProblemDetailsScreen.js
-import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
+import React, { useState, useContext, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image, Platform, Linking } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import { ImageContext } from '../context/ImageContext'; // Importa o contexto de imagens
-import styles from '../styles/problemDetailsStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ImageContext } from '../context/ImageContext';
+import problemDetailsStyles from '../styles/problemDetailsStyles';
+import { useColorTheme } from '../context/ColorContext';
 
 const ProblemDetailsScreen = ({ navigation, route }) => {
+  const { colors } = useColorTheme();
+  const styles = problemDetailsStyles(colors);
+  const { images, setImages } = useContext(ImageContext);
+
   const { selectedProblems = [] } = route.params || {};
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState(null);
-  const { images, setImages } = useContext(ImageContext); // Usa o contexto de imagens
+  const [tempImages, setTempImages] = useState([]);
+
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const savedImages = await AsyncStorage.getItem('images');
+        if (savedImages) {
+          setImages(JSON.parse(savedImages));
+        }
+      } catch (error) {
+        console.error('Erro ao carregar imagens do AsyncStorage', error);
+      }
+    };
+    loadImages();
+  }, []);
 
   const handleGenerateLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -23,20 +42,27 @@ const ProblemDetailsScreen = ({ navigation, route }) => {
 
     try {
       const userLocation = await Location.getCurrentPositionAsync({});
-      setLocation(userLocation.coords);
-      Alert.alert('Localização obtida', `Latitude: ${userLocation.coords.latitude}, Longitude: ${userLocation.coords.longitude}`);
+      const { latitude, longitude } = userLocation.coords;
+      setLocation({ latitude, longitude });
+
+      const url = Platform.select({
+        ios: `maps://app?saddr=${latitude},${longitude}`,
+        android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
+        default: `https://www.google.com/maps?q=${latitude},${longitude}`,
+      });
+
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Erro', 'Não foi possível abrir o mapa.');
+      }
     } catch (error) {
       Alert.alert('Erro ao obter localização', error.message);
     }
   };
 
   const handleAttachImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permissão Negada', 'Precisamos da sua permissão para acessar a galeria.');
-      return;
-    }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -45,71 +71,87 @@ const ProblemDetailsScreen = ({ navigation, route }) => {
     });
 
     if (!result.canceled) {
-      setImages((prevImages) => [...prevImages, result.assets[0]]);
+      const selectedImage = result.assets[0];
+      setTempImages((prevImages) => [...prevImages, { uri: selectedImage.uri }]);
     }
   };
 
-  const handleSend = () => {
+  const handleRemoveImage = (index) => {
+    setTempImages((prevImages) => prevImages.filter((_, imgIndex) => imgIndex !== index));
+  };
+
+  const handleSend = async () => {
     if (description.trim() === '') {
       Alert.alert('Erro', 'Por favor, descreva o problema antes de enviar.');
       return;
     }
 
-    console.log('Problemas:', selectedProblems);
-    console.log('Descrição:', description);
-    console.log('Imagens:', images);
-    console.log('Localização:', location);
+    const newImages = [...images, ...tempImages];
+    setImages(newImages);
+    await AsyncStorage.setItem('images', JSON.stringify(newImages));
+
+    setTempImages([]);
+    setDescription('');
+    setLocation(null);
 
     Alert.alert('Sucesso', 'Seu problema foi enviado com sucesso!');
     navigation.goBack();
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>PROBLEMAS SELECIONADOS</Text>
-
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>PROBLEMAS SELECIONADOS</Text>
       <View style={styles.problemsContainer}>
         {selectedProblems.length > 0 ? (
-          <Text style={styles.problemsText}>
+          <Text style={[styles.problemsText, { color: colors.text }]}>
             {selectedProblems.map((problem, index) => (
               <Text key={index}>• {problem} {'\n'}</Text>
             ))}
           </Text>
         ) : (
-          <Text style={styles.problemsText}>Nenhum problema selecionado.</Text>
+          <Text style={[styles.problemsText, { color: colors.text }]}>Nenhum problema selecionado.</Text>
         )}
       </View>
 
-      <Text style={styles.subtitle}>DESCREVA O PROBLEMA</Text>
+      <Text style={[styles.subtitle, { color: colors.text }]}>DESCREVA O PROBLEMA</Text>
       <TextInput
-        style={styles.descriptionInput}
+        style={[styles.descriptionInput, { color: colors.text, backgroundColor: colors.inputBackground }]}
         multiline
         placeholder="Descreva o problema"
+        placeholderTextColor={colors.placeholderText}
         value={description}
         onChangeText={setDescription}
       />
 
-      {images.length > 0 && (
-        <View style={styles.imagePreviewContainer}>
-          {images.map((image, index) => (
-            <Image key={index} source={{ uri: image.uri }} style={styles.imagePreview} />
-          ))}
-        </View>
-      )}
+      <View style={styles.imagePreviewContainer}>
+        {tempImages.map((image, index) => (
+          <View key={index} style={styles.imageContainer}>
+            <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+            <TouchableOpacity onPress={() => handleRemoveImage(index)}>
+              <FontAwesome name="trash" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
 
       <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleAttachImage}>
-          <FontAwesome name="camera" size={24} color="#000" />
-          <Text style={styles.actionButtonText}>Anexar imagens</Text>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={handleAttachImage}
+          disabled={Platform.OS === 'web'}
+        >
+          <FontAwesome name="camera" size={24} color={colors.icon} />
+          <Text style={[styles.actionButtonText, { color: colors.text }]}>Anexar imagens</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.actionButton} onPress={handleGenerateLocation}>
-          <MaterialIcons name="location-on" size={24} color="#000" />
-          <Text style={styles.actionButtonText}>Gerar Geolocalização</Text>
+          <MaterialIcons name="location-on" size={24} color={colors.icon} />
+          <Text style={[styles.actionButtonText, { color: colors.text }]}>Gerar Geolocalização</Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-        <Text style={styles.sendButtonText}>ENVIAR</Text>
+      <TouchableOpacity style={[styles.sendButton, { backgroundColor: colors.buttonBackground }]} onPress={handleSend}>
+        <Text style={[styles.sendButtonText, { color: colors.buttonText }]}>ENVIAR</Text>
       </TouchableOpacity>
     </ScrollView>
   );

@@ -1,77 +1,117 @@
-// src/Screens/LoginScreen.js
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Alert, Image } from 'react-native';
-import FontAwesome from 'react-native-vector-icons/FontAwesome'; // Ícone do Facebook
-import AntDesign from 'react-native-vector-icons/AntDesign'; // Ícone do Google
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // Ícone do Apple
-import styles from '../styles/loginStyles'; // Importa os estilos do arquivo
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import styles from '../styles/loginStyles';
+import api from '../services/api'; // Backend API
+import auth from '@react-native-firebase/auth'; // Firebase Authentication
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(''); // Estado para armazenar mensagem de erro
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Função para validar e-mail usando regex
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const validateEmail = (email) => {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
   };
 
-  // Função para verificar se os campos de e-mail e senha estão preenchidos e são válidos
-  const handleLogin = () => {
+  // Função para login com Firebase Authentication
+  const handleLogin = async () => {
+    setError(''); // Limpa erros anteriores
     if (!email || !password) {
       setError('Por favor, preencha todos os campos.');
       return;
     }
-
-    if (!isValidEmail(email)) {
+    if (!validateEmail(email)) {
       setError('Por favor, insira um e-mail válido.');
       return;
     }
 
-    if (password.length < 6) {
-      setError('A senha deve ter no mínimo 6 caracteres.');
-      return;
+    try {
+      const userCredential = await auth().signInWithEmailAndPassword(email, password);
+      const token = await userCredential.user.getIdToken(); // Obtém o token do usuário
+      await AsyncStorage.setItem('authToken', token); // Salva o token localmente
+      console.log('Login bem-sucedido:', userCredential.user);
+      Alert.alert('Login realizado com sucesso', 'Bem-vindo de volta!');
+      navigation.navigate('Home'); // Redireciona para a tela principal
+    } catch (error) {
+      console.error('Erro ao fazer login:', error);
+      setError('Credenciais inválidas. Por favor, tente novamente.');
     }
+  };
 
-    // Lógica para autenticação (ex.: chamada para API de login)
-    Alert.alert('Login realizado com sucesso!');
-    navigation.navigate('Home');
+  // Função para login com Google
+  const handleGoogleLogin = async () => {
+    try {
+      const { idToken } = await auth().signInWithPopup(auth.GoogleAuthProvider());
+      await AsyncStorage.setItem('authToken', idToken);
+      Alert.alert('Login com Google realizado com sucesso!');
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('Erro no login com Google:', error);
+      Alert.alert('Erro', 'Falha no login com Google.');
+    }
+  };
+
+  // Função para login com Facebook
+  const handleFacebookLogin = async () => {
+    try {
+      const { accessToken } = await auth().signInWithPopup(auth.FacebookAuthProvider());
+      await AsyncStorage.setItem('authToken', accessToken);
+      Alert.alert('Login com Facebook realizado com sucesso!');
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('Erro no login com Facebook:', error);
+      Alert.alert('Erro', 'Falha no login com Facebook.');
+    }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.innerContainer}>
-        {/* Logo do Aplicativo */}
-        <Image source={require('../../assets/logo.png')} style={styles.logo} />
+        <Image
+          source={require('../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
         <Text style={styles.title}>Bem-vindo</Text>
 
-        {/* Campo de entrada para o e-mail */}
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu e-mail"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={(text) => {
-            setEmail(text);
-            setError(''); // Limpa o erro quando o usuário digita
-          }}
-        />
+        {/* Campo de e-mail */}
+        <View style={styles.inputIconContainer}>
+          <FontAwesome5 name="envelope" size={20} color="#999" style={styles.icon} />
+          <TextInput
+            style={styles.inputWithIcon}
+            placeholder="Digite seu e-mail"
+            placeholderTextColor="#999"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
 
-        {/* Campo de entrada para a senha */}
-        <TextInput
-          style={styles.input}
-          placeholder="Digite sua senha"
-          secureTextEntry
-          value={password}
-          onChangeText={(text) => {
-            setPassword(text);
-            setError(''); // Limpa o erro quando o usuário digita
-          }}
-        />
+        {/* Campo de senha */}
+        <View style={styles.passwordContainer}>
+          <FontAwesome5 name="lock" size={20} color="#999" style={styles.icon} />
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Digite sua senha"
+            secureTextEntry={!showPassword}
+            placeholderTextColor="#999"
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#999" />
+          </TouchableOpacity>
+        </View>
 
-        {/* Mensagem de Erro */}
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         {/* Botão de Login */}
@@ -79,40 +119,34 @@ const LoginScreen = ({ navigation }) => {
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
 
-        {/* Esqueceu a Senha */}
+        {/* Redefinir senha */}
         <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-          <Text style={styles.forgotPasswordText}>Esqueceu sua Senha</Text>
+          <Text style={styles.forgotPasswordText}>Esqueceu sua Senha?</Text>
         </TouchableOpacity>
 
-        {/* Texto de Registro e Botões Sociais */}
-        <Text style={styles.registerText}>Ainda não tem conta? Registre-se.</Text>
+        {/* Registro */}
+        <Text style={styles.registerText}>
+          Ainda não tem conta?{' '}
+          <Text style={styles.registerLink} onPress={() => navigation.navigate('SignUp')}>
+            Registre-se
+          </Text>
+          .
+        </Text>
         <Text style={styles.orText}>OU</Text>
 
-        {/* Botão de Registro com Facebook */}
-        <TouchableOpacity style={styles.socialButton}>
-          <View style={styles.iconContainer}>
-            <FontAwesome name="facebook" size={20} color="#6A1B9A" />
-          </View>
-          <Text style={styles.socialButtonText}>Registre-se com o Facebook</Text>
+        {/* Login com Facebook */}
+        <TouchableOpacity style={styles.socialButton} onPress={handleFacebookLogin}>
+          <FontAwesome5 name="facebook" size={20} color="#ffffff" />
+          <Text style={styles.socialButtonText}>Entrar com o Facebook</Text>
         </TouchableOpacity>
 
-        {/* Botão de Registro com Google */}
-        <TouchableOpacity style={styles.socialButton}>
-          <View style={styles.iconContainer}>
-            <AntDesign name="google" size={20} color="#6A1B9A" />
-          </View>
-          <Text style={styles.socialButtonText}>Registre-se com o Google</Text>
+        {/* Login com Google */}
+        <TouchableOpacity style={styles.socialButtonGoogle} onPress={handleGoogleLogin}>
+          <FontAwesome5 name="google" size={20} color="#ffffff" />
+          <Text style={styles.socialButtonText}>Entrar com o Google</Text>
         </TouchableOpacity>
 
-        {/* Botão de Registro com Apple */}
-        <TouchableOpacity style={styles.socialButton}>
-          <View style={styles.iconContainer}>
-            <MaterialCommunityIcons name="apple" size={20} color="#6A1B9A" />
-          </View>
-          <Text style={styles.socialButtonText}>Registre-se com a Apple</Text>
-        </TouchableOpacity>
-
-        {/* Botão para Registro com E-mail */}
+        {/* Registrar com e-mail */}
         <TouchableOpacity
           style={styles.emailButton}
           onPress={() => navigation.navigate('SignUpWithEmail')}
