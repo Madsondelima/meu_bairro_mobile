@@ -1,76 +1,218 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, TextInput } from 'react-native';
-import profileStyles from '../styles/profileStyles'; 
-import { useColorTheme } from '../context/ColorContext';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import profileStyles from "../styles/profileStyles";
+import { useColorTheme } from "../context/ColorContext";
+
+const MAX_IMAGES = 5; // Limite de imagens na galeria
 
 const ProfileScreen = ({ navigation }) => {
-  const { colors } = useColorTheme(); 
-  const styles = profileStyles(colors); 
+  const { colors } = useColorTheme();
+  const styles = profileStyles(colors);
 
-  const [bioText, setBioText] = useState(
-    'Apaixonado por tecnologia e inovação, Pedro Ferreira é um desenvolvedor de software com mais de 5 anos de experiência.'
-  );
+  const [profileData, setProfileData] = useState({
+    name: "Nome não definido",
+    username: "Usuário não definido",
+    bio: "Nenhuma biografia fornecida.",
+    email: "Não fornecido",
+    phone: "Não fornecido",
+    address: {
+      street: "",
+      number: "",
+      neighborhood: "",
+      city: "",
+    },
+    images: [], // Garantir que imagens comece como um array vazio
+    profileImage: null,
+  });
 
-  const maxLength = 120;
+  const [loading, setLoading] = useState(true);
 
-  const handleBioChange = (text) => {
-    if (text.length <= maxLength) {
-      setBioText(text);
+  // Carrega os dados do perfil do AsyncStorage
+  useEffect(() => {
+    const loadProfileData = async () => {
+      try {
+        const storedProfileData = await AsyncStorage.getItem("profileData");
+        if (storedProfileData) {
+          const parsedData = JSON.parse(storedProfileData);
+          setProfileData((prev) => ({
+            ...prev,
+            ...parsedData,
+            images: Array.isArray(parsedData.images) ? parsedData.images : [], // Garantir que imagens seja um array
+          }));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar os dados do perfil:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProfileData();
+  }, []);
+
+  // Adiciona uma imagem à galeria
+  const handleAddImage = async () => {
+    if (profileData.images.length >= MAX_IMAGES) {
+      Alert.alert(
+        "Limite de Imagens",
+        `Você só pode adicionar até ${MAX_IMAGES} imagens.`
+      );
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        const newImageUri = result.assets[0].uri;
+
+        setProfileData((prev) => {
+          const updatedImages = [...prev.images, newImageUri];
+          const updatedProfileData = { ...prev, images: updatedImages };
+          AsyncStorage.setItem(
+            "profileData",
+            JSON.stringify(updatedProfileData)
+          );
+          return updatedProfileData;
+        });
+
+        Alert.alert("Sucesso", "Imagem adicionada com sucesso!");
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar imagem:", error);
+      Alert.alert("Erro", "Ocorreu um erro ao adicionar a imagem.");
     }
   };
+
+  // Remove uma imagem da galeria
+  const handleRemoveImage = (index) => {
+    Alert.alert(
+      "Remover Imagem",
+      "Você tem certeza que deseja remover esta imagem?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Remover",
+          style: "destructive",
+          onPress: () => {
+            setProfileData((prev) => {
+              const updatedImages = prev.images.filter((_, i) => i !== index);
+              const updatedProfileData = { ...prev, images: updatedImages };
+              AsyncStorage.setItem(
+                "profileData",
+                JSON.stringify(updatedProfileData)
+              );
+              return updatedProfileData;
+            });
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.scrollContainer, { justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color={colors.primary || "#000"} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        <Image 
+        {/* Foto de Perfil */}
+        <Image
           style={styles.profileImage}
-          source={require('../../assets/profile.png')} 
+          source={
+            profileData.profileImage
+              ? { uri: profileData.profileImage }
+              : require("../../assets/profile-placeholder.png")
+          }
         />
-        <Text style={styles.headerText}>Pedro Ferreira</Text>
-        <Text style={styles.profileName}>
-          Entusiasta de tecnologia | Desenvolvedor de Software | Aventureiro nas horas vagas
+        <Text style={styles.headerText}>
+          {profileData.name || "Nome não definido"}
         </Text>
-        
-        <Text style={styles.sectionTitle}>BIOGRAFIA</Text>
-        
-        <TextInput
-          style={styles.bioTextInput}
-          multiline
-          value={bioText}
-          onChangeText={handleBioChange}
-          maxLength={maxLength}
-          placeholder="Digite sua biografia aqui..."
-          placeholderTextColor={colors.placeholderText}
-        />
-        
-        <Text style={styles.characterCount}>
-          {bioText.length}/{maxLength} caracteres
+        <Text style={styles.profileName}>
+          {profileData.username || "Usuário não definido"}
         </Text>
 
+        {/* Informações do Perfil */}
+        <Text style={styles.sectionTitle}>BIOGRAFIA</Text>
+        <Text style={styles.bioText}>
+          {profileData.bio || "Nenhuma biografia fornecida."}
+        </Text>
+
+        <Text style={styles.sectionTitle}>ENDEREÇO</Text>
+        <Text style={styles.bioText}>
+          {profileData.address.street
+            ? `${profileData.address.street}, ${profileData.address.number}, ${profileData.address.neighborhood}, ${profileData.address.city}`
+            : "Endereço não definido"}
+        </Text>
+
+        <Text style={styles.sectionTitle}>CONTATO</Text>
+        <Text style={styles.bioText}>
+          Email: {profileData.email || "Não fornecido"}
+        </Text>
+        <Text style={styles.bioText}>
+          Telefone: {profileData.phone || "Não fornecido"}
+        </Text>
+
+        {/* Botão de Editar Perfil */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={() => navigation.navigate('EditProfile')}
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: colors.buttonBackground }]}
+            onPress={() => navigation.navigate("EditProfile")}
           >
             <Text style={styles.buttonText}>Editar Perfil</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={() => navigation.navigate('Home')}
-          >
-            <Text style={styles.buttonText}>Menu Inicial</Text>
-          </TouchableOpacity>
         </View>
 
+        {/* Galeria de Imagens */}
         <Text style={styles.sectionTitle}>Minhas Imagens</Text>
         <View style={styles.imageGallery}>
-          <Image source={require('../../assets/image1.png')} style={styles.galleryImage} />
-          <Image source={require('../../assets/image2.png')} style={styles.galleryImage} />
-          <Image source={require('../../assets/image3.png')} style={styles.galleryImage} />
-          <Image source={require('../../assets/image1.png')} style={styles.galleryImage} />
-          <Image source={require('../../assets/image2.png')} style={styles.galleryImage} />
-          <Image source={require('../../assets/image3.png')} style={styles.galleryImage} />
+          {profileData.images.length > 0 ? (
+            profileData.images.map((uri, index) => (
+              <View key={index} style={styles.galleryItem}>
+                <Image source={{ uri }} style={styles.galleryImage} />
+                <TouchableOpacity
+                  style={styles.removeImageButton}
+                  onPress={() => handleRemoveImage(index)}
+                >
+                  <Text style={styles.removeImageButtonText}>X</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noImagesText}>Nenhuma imagem disponível.</Text>
+          )}
         </View>
+
+        {/* Botão para Adicionar Imagem */}
+        <TouchableOpacity
+          style={[styles.addImageButton, { backgroundColor: colors.buttonBackground }]}
+          onPress={handleAddImage}
+        >
+          <Text style={styles.addImageButtonText}>Adicionar Imagem</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );

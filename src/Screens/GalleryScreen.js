@@ -1,44 +1,79 @@
-import React, { useContext } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, Alert } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import styles from '../styles/galleryStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import galleryStyles from '../styles/galleryStyles';
 import { ImageContext } from '../context/ImageContext';
 import { useColorTheme } from '../context/ColorContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const GalleryScreen = ({ navigation }) => {
   const { images, setImages } = useContext(ImageContext);
   const { colors } = useColorTheme();
-  const themedStyles = styles(colors);
+  const styles = galleryStyles(colors); // Estilos dinâmicos baseados no tema
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Carregar as imagens salvas no AsyncStorage quando a tela é aberta
+  useEffect(() => {
+    const loadGalleryImages = async () => {
+      try {
+        const savedGalleryImages = await AsyncStorage.getItem('galleryImages');
+        if (savedGalleryImages) {
+          setImages(JSON.parse(savedGalleryImages));
+        }
+      } catch (error) {
+        console.error('Erro ao carregar imagens da galeria:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadGalleryImages();
+  }, []);
 
   // Função para excluir uma imagem
   const handleDeleteImage = async (imageUri) => {
     Alert.alert(
-      "Excluir imagem",
-      "Tem certeza de que deseja excluir esta imagem?",
+      'Excluir imagem',
+      'Tem certeza de que deseja excluir esta imagem?',
       [
+        { text: 'Cancelar', style: 'cancel' },
         {
-          text: "Cancelar",
-          style: "cancel"
-        },
-        {
-          text: "Excluir",
+          text: 'Excluir',
           onPress: async () => {
             const updatedImages = images.filter((img) => img.uri !== imageUri);
             setImages(updatedImages);
-            await AsyncStorage.setItem('images', JSON.stringify(updatedImages));
+
+            try {
+              await AsyncStorage.setItem('galleryImages', JSON.stringify(updatedImages));
+              Alert.alert('Imagem excluída com sucesso.');
+            } catch (error) {
+              console.error('Erro ao atualizar imagens no AsyncStorage:', error);
+            }
           },
-          style: "destructive"
-        }
+          style: 'destructive',
+        },
       ]
     );
   };
 
+  // Renderizar cada imagem na galeria
   const renderItem = ({ item }) => (
-    <View style={themedStyles.imageContainer}>
-      <Image source={{ uri: item.uri }} style={themedStyles.image} />
+    <View style={styles.imageContainer}>
       <TouchableOpacity
-        style={themedStyles.deleteButton}
+        onPress={() => navigation.navigate('ImageView', { imageUri: item.uri })}
+      >
+        <Image source={{ uri: item.uri }} style={styles.image} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.deleteButton}
         onPress={() => handleDeleteImage(item.uri)}
       >
         <MaterialIcons name="delete" size={20} color={colors.deleteIcon} />
@@ -47,27 +82,29 @@ const GalleryScreen = ({ navigation }) => {
   );
 
   return (
-    <View style={themedStyles.container}>
-      <Text style={themedStyles.title}>GALERIA DE IMAGENS</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>GALERIA DE IMAGENS</Text>
 
-      {images.length > 0 ? (
+      {isLoading ? (
+        <ActivityIndicator size="large" color={colors.loadingIndicator} />
+      ) : images.length > 0 ? (
         <FlatList
           data={images}
           renderItem={renderItem}
           keyExtractor={(item) => item.uri}
           numColumns={3}
-          contentContainerStyle={themedStyles.grid}
+          contentContainerStyle={styles.grid}
         />
       ) : (
-        <Text style={themedStyles.emptyText}>Nenhuma imagem disponível.</Text>
+        <Text style={styles.emptyText}>Nenhuma imagem disponível.</Text>
       )}
 
       <TouchableOpacity
-        style={themedStyles.homeButton}
+        style={styles.homeButton}
         onPress={() => navigation.navigate('Home')}
       >
         <MaterialIcons name="home" size={30} color={colors.buttonText} />
-        <Text style={themedStyles.homeButtonText}>Voltar ao Menu</Text>
+        <Text style={styles.homeButtonText}>Voltar ao Menu</Text>
       </TouchableOpacity>
     </View>
   );

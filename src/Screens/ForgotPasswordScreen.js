@@ -1,86 +1,154 @@
-// src/Screens/ForgotPasswordScreen.js
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import forgotPasswordStyles from '../styles/forgotPasswordStyles'; // Importa os estilos
-import { useColorTheme } from '../context/ColorContext'; // Importa o contexto de cores
-import api from '../services/api'; // Instância do Axios configurada
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { sendPasswordResetEmail } from "firebase/auth"; // Firebase Auth
+import { auth } from "../config/firebaseConfig"; // Configuração do Firebase
+import forgotPasswordStyles from "../styles/forgotPasswordStyles"; // Estilos
+import { useColorTheme } from "../context/ColorContext"; // Tema dinâmico para acessibilidade
 
 const ForgotPasswordScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const { colors } = useColorTheme(); // Obtém as cores do tema dinâmico
+  const [email, setEmail] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const { colors } = useColorTheme(); // Tema dinâmico
 
+  // Validações de e-mail
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Expressão regular para validar o e-mail
     return emailRegex.test(email);
   };
 
-  const handleResetPassword = async () => {
+  const handlePasswordReset = async () => {
+    setErrorMessage("");
+    setSuccessMessage("");
+
     if (!email.trim()) {
-      setErrorMessage('Por favor, preencha o campo de e-mail.');
-      setSuccessMessage('');
+      setErrorMessage("Por favor, preencha o campo de e-mail.");
       return;
     }
 
     if (!validateEmail(email)) {
-      setErrorMessage('Por favor, insira um e-mail válido.');
-      setSuccessMessage('');
+      setErrorMessage("Por favor, insira um e-mail válido.");
       return;
     }
 
     try {
-      // Faz uma requisição ao backend para enviar o e-mail de redefinição de senha
-      const response = await api.post('/reset-password', { email });
-      
-      if (response.data.success) {
-        setSuccessMessage('Um e-mail de redefinição de senha foi enviado para o seu endereço de e-mail.');
-        setErrorMessage('');
-      } else {
-        setErrorMessage('Falha ao enviar e-mail de redefinição.');
-        setSuccessMessage('');
-      }
+      await sendPasswordResetEmail(auth, email);
+      setSuccessMessage(
+        "Um link para redefinir sua senha foi enviado para o e-mail fornecido. Por favor, verifique sua caixa de entrada."
+      );
     } catch (error) {
-      setErrorMessage('Erro ao enviar e-mail de redefinição: ' + error.message);
-      setSuccessMessage('');
+      console.error("Erro ao enviar e-mail de redefinição:", error);
+      switch (error.code) {
+        case "auth/user-not-found":
+          setErrorMessage("Usuário não encontrado com o e-mail fornecido.");
+          break;
+        case "auth/invalid-email":
+          setErrorMessage("O e-mail fornecido é inválido.");
+          break;
+        default:
+          setErrorMessage(
+            "Erro ao enviar e-mail de redefinição. Por favor, tente novamente."
+          );
+      }
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={[forgotPasswordStyles.scrollContainer, { backgroundColor: colors.background }]}>
-      <View style={[forgotPasswordStyles.container, { backgroundColor: colors.background }]}>
-        <Icon name="lock" size={100} color={colors.iconColor} style={forgotPasswordStyles.icon} />
-        <Text style={[forgotPasswordStyles.title, { color: colors.text }]}>Redefinir Senha</Text>
-        <Text style={[forgotPasswordStyles.description, { color: colors.text }]}>
-          Por favor, digite seu e-mail para receber um link de redefinição de senha.
+    <ScrollView
+      contentContainerStyle={[
+        forgotPasswordStyles.scrollContainer,
+        { backgroundColor: colors.background },
+      ]}
+    >
+      <View
+        style={[
+          forgotPasswordStyles.container,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <Text
+          style={[forgotPasswordStyles.title, { color: colors.text }]}
+        >
+          Redefinir Senha
+        </Text>
+        <Text
+          style={[forgotPasswordStyles.description, { color: colors.text }]}
+        >
+          Por favor, insira seu e-mail para receber um link de redefinição de
+          senha.
         </Text>
 
-        {/* Campo de entrada para o e-mail */}
         <TextInput
-          style={[forgotPasswordStyles.input, { borderColor: colors.inputBorder }]}
+          style={[
+            forgotPasswordStyles.input,
+            { borderColor: colors.border, color: colors.text },
+          ]}
           placeholder="Digite seu e-mail"
-          placeholderTextColor={colors.placeholder}
+          placeholderTextColor={colors.placeholderText}
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
         />
 
-        {/* Exibe mensagem de erro se houver */}
-        {errorMessage ? <Text style={[forgotPasswordStyles.errorText, { color: colors.error }]}>{errorMessage}</Text> : null}
+        {/* Exibir mensagens de erro */}
+        {errorMessage ? (
+          <Text
+            style={[
+              forgotPasswordStyles.errorText,
+              { color: colors.error },
+            ]}
+          >
+            {errorMessage}
+          </Text>
+        ) : null}
 
-        {/* Exibe mensagem de sucesso se houver */}
-        {successMessage ? <Text style={[forgotPasswordStyles.successText, { color: colors.success }]}>{successMessage}</Text> : null}
+        {/* Exibir mensagens de sucesso */}
+        {successMessage ? (
+          <Text
+            style={[
+              forgotPasswordStyles.successText,
+              { color: colors.success },
+            ]}
+          >
+            {successMessage}
+          </Text>
+        ) : null}
 
-        {/* Botão para enviar e-mail de redefinição de senha */}
-        <TouchableOpacity style={[forgotPasswordStyles.button, { backgroundColor: colors.buttonBackground }]} onPress={handleResetPassword}>
-          <Text style={[forgotPasswordStyles.buttonText, { color: colors.buttonText }]}>Enviar</Text>
+        <TouchableOpacity
+          style={[
+            forgotPasswordStyles.button,
+            { backgroundColor: colors.buttonBackground },
+          ]}
+          onPress={handlePasswordReset}
+        >
+          <Text
+            style={[
+              forgotPasswordStyles.buttonText,
+              { color: colors.buttonText },
+            ]}
+          >
+            Enviar Link
+          </Text>
         </TouchableOpacity>
 
-        {/* Botão para voltar para a tela de login */}
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={[forgotPasswordStyles.backToLoginText, { color: colors.link }]}>Voltar para Login</Text>
+        {/* Botão para voltar ao login */}
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <Text
+            style={[
+              forgotPasswordStyles.backToLoginText,
+              { color: colors.link },
+            ]}
+          >
+            Voltar para Login
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

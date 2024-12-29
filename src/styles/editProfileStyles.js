@@ -98,15 +98,29 @@ const styles = StyleSheet.create({
     color: 'red',
     marginBottom: 10,
   },
-  addButton: {
-    backgroundColor: '#28a745',
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    width: '100%',
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: '#28a745', // Verde para o botão de salvar
     paddingVertical: 12,
-    paddingHorizontal: 30,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 20,
+    marginRight: 10, // Espaço entre os botões
   },
-  addButtonText: {
+  clearButton: {
+    flex: 1,
+    backgroundColor: '#dc3545', // Vermelho para o botão de limpar
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginLeft: 10, // Espaço entre os botões
+  },
+  buttonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',

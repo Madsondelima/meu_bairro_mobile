@@ -4,84 +4,114 @@ const myRequestsStyles = (colors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingVertical: 20,
+      padding: 16,
       backgroundColor: colors.background,
-    },
-    headerContainer: {
-      alignItems: 'center',
-      marginBottom: 20,
     },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
-      textAlign: 'center',
+      marginBottom: 16,
       color: colors.text,
-      marginBottom: 5,
-    },
-    subtitle: {
-      fontSize: 16,
-      textAlign: 'center',
-      color: colors.subtitle || colors.text,
-      marginBottom: 20,
-    },
-    listContainer: {
-      width: '90%',
-      alignItems: 'center',
-    },
-    requestItem: {
-      backgroundColor: colors.buttonBackground || '#007bff',
-      paddingVertical: 15,
-      paddingHorizontal: 20,
-      borderRadius: 20,
-      marginVertical: 8,
-      width: '100%',
-      alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 5 },
-      shadowOpacity: 0.2,
-      shadowRadius: 8,
-      elevation: 6,
-    },
-    requestText: {
-      color: colors.buttonText || '#ffffff',
-      fontSize: 18,
-      textAlign: 'center',
-      fontWeight: '500',
     },
     noRequestsText: {
       fontSize: 16,
       textAlign: 'center',
-      color: colors.subtitle || colors.text,
-      marginTop: 20,
+      marginTop: 32,
+      color: colors.text,
     },
-    homeButton: {
-      position: 'absolute',
-      bottom: 20,
-      right: 20,
-      flexDirection: 'row',
+    emptyStateContainer: {
+      flex: 1,
+      justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.buttonBackground || '#007bff',
-      borderRadius: 25,
-      paddingHorizontal: 20,
-      paddingVertical: 10,
+      marginTop: 100,
+    },
+    requestCard: {
+      backgroundColor: colors.cardBackground,
+      borderRadius: 10,
+      padding: 16,
+      marginBottom: 16,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.25,
-      shadowRadius: 6,
-      elevation: 10,
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 3,
     },
-    homeIcon: {
-      color: colors.buttonText || '#ffffff',
-      fontSize: 24,
-      marginRight: 5,
+    requestTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: colors.text,
     },
-    homeButtonText: {
-      color: colors.buttonText || '#ffffff',
-      fontSize: 16,
+    requestDescription: {
+      fontSize: 14,
+      marginVertical: 8,
+      color: colors.text,
+    },
+    requestImage: {
+      width: 100,
+      height: 100,
+      borderRadius: 8,
+      marginRight: 8,
+    },
+    
+    requestDate: {
+      fontSize: 12,
+      color: colors.subText,
+    },
+    requestStatus: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: colors.statusText,
+      marginTop: 5,
+    },
+    deleteButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    deleteButtonText: {
+      fontSize: 14,
+      marginLeft: 4,
+      color: 'red',
+    },
+    listContainer: {
+      paddingBottom: 16,
+    },
+    requestLocation: {
+      fontSize: 14,
+      color: colors.text,
+      marginVertical: 5,
+    },
+    mapButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 10,
+      marginTop: 5,
+      borderRadius: 5,
+      backgroundColor: colors.buttonBackground,
+      alignSelf: 'flex-start', // Para que o botão não ocupe toda a largura
+    },
+    mapButtonText: {
+      fontSize: 14,
+      color: colors.buttonText,
       fontWeight: 'bold',
     },
+    homeButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 12,
+      marginVertical: 20,
+      borderRadius: 8,
+      backgroundColor: colors.buttonBackground, // Destaque para o botão
+    },
+    homeButtonText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: colors.white,
+      marginLeft: 8,
+    },    
+
   });
 
 export default myRequestsStyles;

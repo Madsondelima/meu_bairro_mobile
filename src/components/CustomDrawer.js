@@ -1,20 +1,39 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import * as ImagePicker from 'expo-image-picker';
 import { useColorTheme } from '../context/ColorContext';
 
 const CustomDrawer = ({ navigation }) => {
   const { colors, toggleColorblindMode, isColorblind } = useColorTheme();
+  const [profileImage, setProfileImage] = useState('https://via.placeholder.com/100'); // Estado inicial para a imagem de perfil
+
+  // Função para selecionar imagem
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar suas fotos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
 
   return (
     <View style={[styles.drawerContainer, { backgroundColor: colors.background }]}>
       {/* Cabeçalho do Perfil */}
       <View style={styles.profileContainer}>
-        <TouchableOpacity style={styles.profileImageContainer} onPress={() => alert('Trocar foto de perfil')}>
-          <Image
-            source={{ uri: 'https://via.placeholder.com/100' }} // URL da imagem de perfil do usuário
-            style={styles.profileImage}
-          />
+        <TouchableOpacity style={styles.profileImageContainer} onPress={pickImage}>
+          <Image source={{ uri: profileImage }} style={styles.profileImage} />
           <View style={styles.cameraIconContainer}>
             <MaterialIcons name="camera-alt" size={20} color="#fff" />
           </View>
@@ -41,14 +60,8 @@ const CustomDrawer = ({ navigation }) => {
         <Text style={[styles.drawerLabel, { color: colors.text }]}>Perfil</Text>
       </TouchableOpacity>
 
-      {/* Outras opções do menu */}
-      {/* ... */}
-
       {/* Alternar Daltonismo */}
-      <TouchableOpacity
-        style={styles.drawerItem}
-        onPress={toggleColorblindMode}
-      >
+      <TouchableOpacity style={styles.drawerItem} onPress={toggleColorblindMode}>
         <MaterialIcons name="visibility" size={24} color={colors.text} />
         <Text style={[styles.drawerLabel, { color: colors.text }]}>
           {isColorblind ? 'Desativar Daltonismo' : 'Ativar Daltonismo'}

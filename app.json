@@ -4,25 +4,34 @@
     "slug": "meu_bairro_mobile",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "meu_bairro_mobile",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.madson_lima.meu_bairro_mobile",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Precisamos acessar sua localização para fornecer informações de geolocalização."
+        "NSLocationWhenInUseUsageDescription": "Precisamos acessar sua localização para fornecer informações de geolocalização.",
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
+        "FacebookAppId": "1180770262990332",
+        "FacebookDisplayName": "Meu Bairro",
+        "LSApplicationQueriesSchemes": [
+          "fbapi",
+          "fb-messenger-share-api",
+          "fbauth2",
+          "fbshareextension"
+        ]
       }
     },
     "android": {
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
-      ],
-      "jsEngine": "jsc",
+      "package": "com.madson_lima.meu_bairro_mobile",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "FOREGROUND_SERVICE"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -31,6 +40,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+      
     "plugins": [
       [
         "expo-facebook",
@@ -38,7 +48,9 @@
           "appId": "1180770262990332"
         }
       ],
-      "expo-location"
+      "expo-location",
+      "expo-notifications",
+      "expo-build-properties"
     ]
   }
 }

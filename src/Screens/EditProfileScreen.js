@@ -1,36 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image, Animated } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import * as ImagePicker from 'expo-image-picker';
-import styles from '../styles/editProfileStyles';
-import { useColorTheme } from '../context/ColorContext';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  Animated,
+  Image,
+} from "react-native";
+import Feather from "react-native-vector-icons/Feather";
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import styles from "../styles/editProfileStyles";
+import { useColorTheme } from "../context/ColorContext";
+import MaskInput, { Masks } from "react-native-mask-input";
 
 const EditProfileScreen = ({ navigation }) => {
   const { colors } = useColorTheme();
-
-  const [name, setName] = useState('');
-  const [profileImage, setProfileImage] = useState(null);
-  const [username, setUsername] = useState('');
-  const [bio, setBio] = useState('');
-  const [birthdate, setBirthdate] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [rg, setRg] = useState('');
-  const [address, setAddress] = useState({ cep: '', street: '', number: '', neighborhood: '', city: '' });
-  const [error, setError] = useState('');
-  
   const profileImageScale = useState(new Animated.Value(1))[0];
 
+  // Inicializa os dados do perfil com valores padrão
+  const [profileData, setProfileData] = useState({
+    name: "",
+    username: "",
+    bio: "",
+    birthdate: "",
+    email: "",
+    phone: "",
+    rg: "",
+    cpf: "",
+    address: {
+      cep: "",
+      street: "",
+      number: "",
+      neighborhood: "",
+      city: "",
+    },
+    profileImage: null,
+  });
+
+  const maxLength = 120;
+
+  // Carrega os dados do AsyncStorage, se existirem
   useEffect(() => {
-    const requestPermissions = async () => {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permissão Necessária', 'Precisamos de permissão para acessar sua galeria!');
+    const loadProfileData = async () => {
+      try {
+        const storedProfileData = await AsyncStorage.getItem("profileData");
+        if (storedProfileData) {
+          setProfileData(JSON.parse(storedProfileData));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar os dados do perfil:", error);
       }
     };
-
-    requestPermissions();
+    loadProfileData();
   }, []);
 
   const pickImage = async () => {
@@ -43,36 +67,15 @@ const EditProfileScreen = ({ navigation }) => {
       });
 
       if (!result.canceled) {
-        setProfileImage(result.assets[0].uri);
+        setProfileData((prev) => ({
+          ...prev,
+          profileImage: result.assets[0].uri,
+        }));
         animateImage();
       }
     } catch (error) {
-      console.error('Erro ao selecionar a imagem:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao selecionar a imagem.');
-    }
-  };
-
-  const takePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permissão Necessária', 'Precisamos de permissão para acessar sua câmera!');
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        setProfileImage(result.assets[0].uri);
-        animateImage();
-      }
-    } catch (error) {
-      console.error('Erro ao abrir a câmera:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao abrir a câmera.');
+      console.error("Erro ao selecionar a imagem:", error);
+      Alert.alert("Erro", "Ocorreu um erro ao selecionar a imagem.");
     }
   };
 
@@ -91,182 +94,333 @@ const EditProfileScreen = ({ navigation }) => {
     ]).start();
   };
 
-  const handleImageSelection = () => {
-    Alert.alert(
-      'Selecionar Imagem',
-      'Escolha uma opção',
-      [
-        { text: 'Tirar Foto', onPress: takePhoto },
-        { text: 'Escolher da Galeria', onPress: pickImage },
-        { text: 'Cancelar', style: 'cancel' },
-      ],
-      { cancelable: true }
-    );
-  };
-
   const validateFields = () => {
-    if (!name || !username || !bio || !birthdate || !email || !phone || !rg || !address.cep || !address.street || !address.number || !address.neighborhood || !address.city) {
-      setError('Por favor, preencha todos os campos obrigatórios.');
+    const {
+      name,
+      username,
+      bio,
+      birthdate,
+      email,
+      phone,
+      rg,
+      cpf,
+      address: { cep, street, number, neighborhood, city },
+    } = profileData;
+
+    if (
+      !name ||
+      !username ||
+      !bio ||
+      !birthdate ||
+      !email ||
+      !phone ||
+      !rg ||
+      !cpf ||
+      !cep ||
+      !street ||
+      !number ||
+      !neighborhood ||
+      !city
+    ) {
+      Alert.alert("Erro", "Por favor, preencha todos os campos obrigatórios.");
       return false;
     }
-    setError('');
     return true;
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (!validateFields()) return;
 
-    Alert.alert('Sucesso', 'Perfil salvo com sucesso!');
-    navigation.navigate('ProfileScreen');
+    try {
+      await AsyncStorage.setItem("profileData", JSON.stringify(profileData));
+      Alert.alert("Sucesso", "Perfil salvo com sucesso!");
+
+      // Navega para a tela de Perfil após salvar
+      navigation.navigate("ProfileScreen");
+    } catch (error) {
+      console.error("Erro ao salvar os dados do perfil:", error);
+      Alert.alert("Erro", "Não foi possível salvar os dados do perfil.");
+    }
+  };
+
+  const handleClearFields = () => {
+    setProfileData({
+      name: "",
+      username: "",
+      bio: "",
+      birthdate: "",
+      email: "",
+      phone: "",
+      rg: "",
+      cpf: "",
+      address: {
+        cep: "",
+        street: "",
+        number: "",
+        neighborhood: "",
+        city: "",
+      },
+      profileImage: null,
+    });
+    Alert.alert("Campos Limpos", "Todos os campos foram limpos!");
   };
 
   return (
-    <View style={[styles.fullContainer, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.fullContainer, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <Text style={[styles.title, { color: colors.text }]}>EDITAR PERFIL</Text>
+        <View
+          style={[styles.container, { backgroundColor: colors.background }]}
+        >
+          <Text style={[styles.title, { color: colors.text }]}>
+            EDITAR PERFIL
+          </Text>
 
-          {/* Mostrar a imagem selecionada */}
+          {/* Mostra a imagem selecionada */}
           <View style={styles.photoContainer}>
-            {profileImage ? (
-              <Animated.Image source={{ uri: profileImage }} style={[styles.profileImage, { transform: [{ scale: profileImageScale }] }]} />
+            {profileData.profileImage ? (
+              <Animated.Image
+                source={{ uri: profileData.profileImage }}
+                style={[
+                  styles.profileImage,
+                  { transform: [{ scale: profileImageScale }] },
+                ]}
+              />
             ) : (
               <View style={styles.placeholderImage}>
                 <Feather name="user" size={50} color="#ccc" />
               </View>
             )}
-            <TouchableOpacity style={styles.uploadButton} onPress={handleImageSelection}>
+            <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
               <Feather name="camera" size={30} color={colors.icon} />
             </TouchableOpacity>
-            <Text style={[styles.uploadText, { color: colors.text }]}>Carregar Foto</Text>
+            <Text style={[styles.uploadText, { color: colors.text }]}>
+              Carregar Foto
+            </Text>
           </View>
 
           {/* Formulário de Edição */}
           <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
             placeholder="Digite seu nome"
             placeholderTextColor={colors.placeholder}
-            value={name}
-            onChangeText={setName}
-            onBlur={validateFields}
+            value={profileData.name}
+            onChangeText={(text) =>
+              setProfileData({ ...profileData, name: text })
+            }
           />
           <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
             placeholder="Digite o nome de usuário"
             placeholderTextColor={colors.placeholder}
-            value={username}
-            onChangeText={setUsername}
-            onBlur={validateFields}
+            value={profileData.username}
+            onChangeText={(text) =>
+              setProfileData({ ...profileData, username: text })
+            }
           />
           <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
             placeholder="Escreva sobre você"
             placeholderTextColor={colors.placeholder}
-            value={bio}
-            onChangeText={setBio}
+            value={profileData.bio}
+            onChangeText={(text) =>
+              setProfileData({ ...profileData, bio: text })
+            }
             multiline
-            onBlur={validateFields}
           />
-          <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-            placeholder="Digite sua data de nascimento"
+          <MaskInput
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
+            placeholder="Data de Nascimento (DD/MM/AAAA)"
             placeholderTextColor={colors.placeholder}
-            value={birthdate}
-            onChangeText={setBirthdate}
-            onBlur={validateFields}
+            value={profileData.birthdate}
+            onChangeText={(text) =>
+              setProfileData({ ...profileData, birthdate: text })
+            }
+            mask={Masks.DATE_DDMMYYYY}
+            keyboardType="numeric"
           />
-
-          {/* Campos de email, telefone e RG */}
-          <View style={styles.inputIconContainer}>
-            <MaterialCommunityIcons name="email-outline" size={20} color={colors.icon} style={styles.icon} />
-            <TextInput
-              style={[styles.inputWithIcon, { color: colors.text }]}
-              placeholder="Digite seu e-mail"
-              placeholderTextColor={colors.placeholder}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              onBlur={validateFields}
-            />
-          </View>
-          <View style={styles.inputIconContainer}>
-            <Feather name="phone" size={20} color={colors.icon} style={styles.icon} />
-            <TextInput
-              style={[styles.inputWithIcon, { color: colors.text }]}
-              placeholder="Digite seu telefone (WhatsApp)"
-              placeholderTextColor={colors.placeholder}
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-              onBlur={validateFields}
-            />
-          </View>
-          <View style={styles.inputIconContainer}>
-            <MaterialCommunityIcons name="card-account-details-outline" size={20} color={colors.icon} style={styles.icon} />
-            <TextInput
-              style={[styles.inputWithIcon, { color: colors.text }]}
-              placeholder="Digite seu RG"
-              placeholderTextColor={colors.placeholder}
-              value={rg}
-              onChangeText={setRg}
-              onBlur={validateFields}
-            />
-          </View>
-
-          {/* Endereço */}
           <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
+            placeholder="Digite seu e-mail"
+            placeholderTextColor={colors.placeholder}
+            value={profileData.email}
+            onChangeText={(text) =>
+              setProfileData({ ...profileData, email: text })
+            }
+            keyboardType="email-address"
+          />
+          <MaskInput
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
+            placeholder="Digite seu telefone (WhatsApp)"
+            placeholderTextColor={colors.placeholder}
+            value={profileData.phone}
+            onChangeText={(text) =>
+              setProfileData({ ...profileData, phone: text })
+            }
+            mask={Masks.BRL_PHONE}
+            keyboardType="phone-pad"
+          />
+          <MaskInput
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
+            placeholder="Digite seu RG"
+            placeholderTextColor={colors.placeholder}
+            value={profileData.rg}
+            onChangeText={(text) =>
+              setProfileData({ ...profileData, rg: text })
+            }
+            mask={[
+              /\d/,
+              /\d/,
+              ".",
+              /\d/,
+              /\d/,
+              /\d/,
+              ".",
+              /\d/,
+              /\d/,
+              /\d/,
+              "-",
+              /\d/,
+            ]}
+            keyboardType="numeric"
+          />
+          <MaskInput
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
+            placeholder="Digite seu CPF"
+            placeholderTextColor={colors.placeholder}
+            value={profileData.cpf}
+            onChangeText={(text) =>
+              setProfileData({ ...profileData, cpf: text })
+            }
+            mask={Masks.BRL_CPF}
+            keyboardType="numeric"
+          />
+          {/* Campos de Endereço */}
+          <TextInput
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
             placeholder="CEP"
             placeholderTextColor={colors.placeholder}
-            value={address.cep}
-            onChangeText={(text) => setAddress({ ...address, cep: text })}
-            onBlur={validateFields}
+            value={profileData.address.cep}
+            onChangeText={(text) =>
+              setProfileData((prev) => ({
+                ...prev,
+                address: { ...prev.address, cep: text },
+              }))
+            }
           />
           <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
             placeholder="Rua"
             placeholderTextColor={colors.placeholder}
-            value={address.street}
-            onChangeText={(text) => setAddress({ ...address, street: text })}
-            onBlur={validateFields}
+            value={profileData.address.street}
+            onChangeText={(text) =>
+              setProfileData((prev) => ({
+                ...prev,
+                address: { ...prev.address, street: text },
+              }))
+            }
           />
-          <View style={styles.inlineInputs}>
-            <TextInput
-              style={[styles.input, styles.smallInput, { color: colors.text, borderColor: colors.border }]}
-              placeholder="Nº"
-              placeholderTextColor={colors.placeholder}
-              value={address.number}
-              onChangeText={(text) => setAddress({ ...address, number: text })}
-              onBlur={validateFields}
-            />
-            <TextInput
-              style={[styles.input, styles.largeInput, { color: colors.text, borderColor: colors.border }]}
-              placeholder="Bairro"
-              placeholderTextColor={colors.placeholder}
-              value={address.neighborhood}
-              onChangeText={(text) => setAddress({ ...address, neighborhood: text })}
-              onBlur={validateFields}
-            />
-          </View>
           <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
+            placeholder="Número"
+            placeholderTextColor={colors.placeholder}
+            value={profileData.address.number}
+            onChangeText={(text) =>
+              setProfileData((prev) => ({
+                ...prev,
+                address: { ...prev.address, number: text },
+              }))
+            }
+          />
+          <TextInput
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
+            placeholder="Bairro"
+            placeholderTextColor={colors.placeholder}
+            value={profileData.address.neighborhood}
+            onChangeText={(text) =>
+              setProfileData((prev) => ({
+                ...prev,
+                address: { ...prev.address, neighborhood: text },
+              }))
+            }
+          />
+          <TextInput
+            style={[
+              styles.input,
+              { color: colors.text, borderColor: colors.border },
+            ]}
             placeholder="Cidade"
             placeholderTextColor={colors.placeholder}
-            value={address.city}
-            onChangeText={(text) => setAddress({ ...address, city: text })}
-            onBlur={validateFields}
+            value={profileData.address.city}
+            onChangeText={(text) =>
+              setProfileData((prev) => ({
+                ...prev,
+                address: { ...prev.address, city: text },
+              }))
+            }
           />
-
-          {/* Exibir mensagem de erro, se houver */}
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-          {/* Botão de Salvar */}
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: colors.buttonBackground }]}
-            onPress={handleSaveProfile}
-          >
-            <Text style={[styles.addButtonText, { color: colors.buttonText }]}>SALVAR PERFIL</Text>
-          </TouchableOpacity>
+          {/* Botões de Salvar e Limpar */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.saveButton,
+                { backgroundColor: colors.buttonBackground },
+              ]}
+              onPress={handleSaveProfile}
+            >
+              <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                SALVAR PERFIL
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.clearButton,
+                { backgroundColor: colors.buttonBackground },
+              ]}
+              onPress={handleClearFields}
+            >
+              <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                LIMPAR CAMPOS
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </View>

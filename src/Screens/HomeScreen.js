@@ -1,46 +1,59 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Alert, DrawerLayoutAndroid, Modal } from 'react-native';
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  DrawerLayoutAndroid,
+  Image,
+  StyleSheet,
+  Alert,
+  Modal,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useColorTheme } from '../context/ColorContext';
 
 const HomeScreen = ({ navigation }) => {
   const { colors, toggleColorblindMode, applyColorblindFilter, isColorblind } = useColorTheme();
+  const drawer = useRef(null);
   const [profileImage, setProfileImage] = useState(null);
-  const [drawer, setDrawer] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false); // Modal para selecionar o tipo de daltonismo
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  // Função para abrir o menu lateral
   const openDrawer = () => {
-    drawer.openDrawer();
+    if (drawer.current) {
+      drawer.current.openDrawer();
+    }
   };
 
-  // Função para escolher imagem do dispositivo
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permissão necessária', 'Precisamos da permissão para acessar suas fotos.');
-      return;
-    }
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissão necessária', 'Precisamos da permissão para acessar suas fotos.');
+        return;
+      }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
 
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+      if (!result.canceled) {
+        setProfileImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Erro ao selecionar imagem:', error);
+      Alert.alert('Erro', 'Não foi possível selecionar a imagem.');
     }
   };
 
-  // Função para exibir o modal de seleção de filtro de daltonismo
   const openColorblindModal = () => {
     setIsModalVisible(true);
   };
 
-  // Conteúdo do Drawer
+  
   const drawerContent = () => (
     <View style={[styles.drawerContainer, { backgroundColor: colors.background }]}>
       <View style={styles.profileContainer}>
@@ -52,7 +65,7 @@ const HomeScreen = ({ navigation }) => {
           )}
         </TouchableOpacity>
         <Text style={[styles.userName, { color: colors.text }]}>Nome do Usuário</Text>
-        <Text style={[styles.userDetails, { color: colors.text }]}>Cidade: Santana de Parnaiba</Text>
+        <Text style={[styles.userDetails, { color: colors.text }]}>Cidade: Santana de Parnaíba</Text>
         <Text style={[styles.userDetails, { color: colors.text }]}>Bairro: Parque Santana 2</Text>
       </View>
 
@@ -63,7 +76,7 @@ const HomeScreen = ({ navigation }) => {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.drawerItem} onPress={() => drawer.closeDrawer()}>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => drawer.current.closeDrawer()}>
         <MaterialIcons name="close" size={24} color={colors.text} />
         <Text style={[styles.drawerLabel, { color: colors.text }]}>Fechar Menu</Text>
       </TouchableOpacity>
@@ -72,76 +85,57 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <DrawerLayoutAndroid
-      ref={(ref) => setDrawer(ref)}
+      ref={drawer}
       drawerWidth={300}
       drawerPosition="left"
       renderNavigationView={drawerContent}
     >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {/* Botão para abrir o menu lateral */}
         <TouchableOpacity onPress={openDrawer} style={styles.menuButton}>
           <MaterialIcons name="menu" size={28} color={colors.text} />
         </TouchableOpacity>
 
-        {/* Conteúdo da tela principal */}
         <Text style={[styles.title, { color: colors.text }]}>Menu Inicial</Text>
         <View style={styles.grid}>
-          <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('RequestRegistration')}>
-            <MaterialIcons name="add-circle" size={40} color={colors.buttonBackground} />
-            <Text style={[styles.gridText, { color: colors.text }]}>Solicitar Serviço</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('EditProfile')}>
-            <MaterialIcons name="person-add" size={40} color={colors.buttonBackground} />
-            <Text style={[styles.gridText, { color: colors.text }]}>Adicionar Perfil</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('ContactScreen')}>
-            <MaterialIcons name="mail" size={40} color={colors.buttonBackground} />
-            <Text style={[styles.gridText, { color: colors.text }]}>Fale Conosco</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('GalleryScreen')}>
-            <MaterialIcons name="photo" size={40} color={colors.buttonBackground} />
-            <Text style={[styles.gridText, { color: colors.text }]}>Galeria</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('ProfileScreen')}>
-            <MaterialIcons name="account-circle" size={40} color={colors.buttonBackground} />
-            <Text style={[styles.gridText, { color: colors.text }]}>Perfil</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('ServicesScreen')}>
-            <MaterialIcons name="build" size={40} color={colors.buttonBackground} />
-            <Text style={[styles.gridText, { color: colors.text }]}>Serviços</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('FAQScreen')}>
-            <MaterialIcons name="help-outline" size={40} color={colors.buttonBackground} />
-            <Text style={[styles.gridText, { color: colors.text }]}>Dúvidas</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('MyRequests')}>
-            <MaterialIcons name="assignment" size={40} color={colors.buttonBackground} />
-            <Text style={[styles.gridText, { color: colors.text }]}>Minhas Solicitações</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('About')}>
-            <MaterialIcons name="info" size={40} color={colors.buttonBackground} />
-            <Text style={[styles.gridText, { color: colors.text }]}>Sobre</Text>
-          </TouchableOpacity>
+          {/* Botões de navegação */}
+          {[
+            { name: 'RequestRegistration', label: 'Solicitar Serviço', icon: 'add-circle' },
+            { name: 'EditProfile', label: 'Adicionar Perfil', icon: 'person-add' },
+            { name: 'ContactScreen', label: 'Fale Conosco', icon: 'mail' },
+            { name: 'GalleryScreen', label: 'Galeria', icon: 'photo' },
+            { name: 'ProfileScreen', label: 'Perfil', icon: 'account-circle' },
+            { name: 'ServicesScreen', label: 'Serviços', icon: 'build' },
+            { name: 'FAQScreen', label: 'Dúvidas', icon: 'help-outline' },
+            { name: 'MyRequests', label: 'Minhas Solicitações', icon: 'assignment' },
+            { name: 'About', label: 'Sobre', icon: 'info' },
+          ].map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.gridItem}
+              onPress={() => navigation.navigate(item.name)}
+            >
+              <MaterialIcons name={item.icon} size={40} color={colors.buttonBackground} />
+              <Text style={[styles.gridText, { color: colors.text }]}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
-      
-      {/* Modal para seleção de tipo de daltonismo */}
+
       <Modal visible={isModalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Selecione o Tipo de Daltonismo</Text>
-            <TouchableOpacity onPress={() => { applyColorblindFilter('deuteranopia'); setIsModalVisible(false); }}>
-              <Text style={styles.modalOption}>Deuteranopia</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => { applyColorblindFilter('protanopia'); setIsModalVisible(false); }}>
-              <Text style={styles.modalOption}>Protanopia</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => { applyColorblindFilter('tritanopia'); setIsModalVisible(false); }}>
-              <Text style={styles.modalOption}>Tritanopia</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => { applyColorblindFilter(null); setIsModalVisible(false); }}>
-              <Text style={styles.modalOption}>Cores Padrão</Text>
-            </TouchableOpacity>
+            {['Deuteranopia', 'Protanopia', 'Tritanopia', 'Cores Padrão'].map((filter, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  applyColorblindFilter(filter === 'Cores Padrão' ? null : filter.toLowerCase());
+                  setIsModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalOption}>{filter}</Text>
+              </TouchableOpacity>
+            ))}
             <TouchableOpacity onPress={() => setIsModalVisible(false)}>
               <Text style={styles.modalClose}>Cancelar</Text>
             </TouchableOpacity>
@@ -151,6 +145,7 @@ const HomeScreen = ({ navigation }) => {
     </DrawerLayoutAndroid>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

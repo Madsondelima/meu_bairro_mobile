@@ -1,43 +1,49 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Definindo as paletas de cores para cada filtro de daltonismo
-
-// Tema normal (claro)
-const normalLightTheme = {
-  background: '#f0f4f7',
-  text: '#333333',
-  buttonBackground: '#007bff',
-  buttonText: '#ffffff',
-  inputBackground: '#ffffff',
-  placeholderText: '#cccccc',
-  border: '#dddddd',
+// Paleta de cores sugerida
+const suggestedPalette = {
+  primary: '#F28A2E', // Laranja vibrante
+  secondary: '#F2732E', // Laranja mais intenso
+  accent: '#D94929', // Vermelho acentuado
+  neutralDark: '#575352', // Cinza escuro
+  neutralLight: '#D9D9D9', // Cinza claro
 };
 
-// Tema normal (escuro)
+// Tema normal (claro e escuro)
+const normalLightTheme = {
+  background: '#ffffff',
+  text: suggestedPalette.neutralDark,
+  buttonBackground: suggestedPalette.primary,
+  buttonText: '#ffffff',
+  inputBackground: '#ffffff',
+  placeholderText: suggestedPalette.neutralLight,
+  border: suggestedPalette.neutralLight,
+};
 const normalDarkTheme = {
   background: '#1c1c1c',
   text: '#ffffff',
-  buttonBackground: '#5A67D8',
+  buttonBackground: suggestedPalette.secondary,
   buttonText: '#ffffff',
   inputBackground: '#2C2C2C',
   placeholderText: '#777777',
   border: '#444444',
 };
 
-// Temas para diferentes tipos de daltonismo (claro e escuro)
+// Temas para diferentes tipos de daltonismo
 const deuteranopiaLightTheme = {
-  background: '#f4f1c9',
-  text: '#3b3b3b',
-  buttonBackground: '#ff9933',
+  background: suggestedPalette.neutralLight,
+  text: suggestedPalette.neutralDark,
+  buttonBackground: suggestedPalette.primary,
   buttonText: '#000000',
   inputBackground: '#ffffff',
   placeholderText: '#777777',
-  border: '#dddddd',
+  border: suggestedPalette.neutralLight,
 };
 const deuteranopiaDarkTheme = {
   background: '#2d2d2d',
-  text: '#f4f1c9',
-  buttonBackground: '#ffb366',
+  text: suggestedPalette.neutralLight,
+  buttonBackground: suggestedPalette.secondary,
   buttonText: '#000000',
   inputBackground: '#2C2C2C',
   placeholderText: '#777777',
@@ -47,7 +53,7 @@ const deuteranopiaDarkTheme = {
 const protanopiaLightTheme = {
   background: '#f4e8c7',
   text: '#4b3b3b',
-  buttonBackground: '#ff7f7f',
+  buttonBackground: suggestedPalette.accent,
   buttonText: '#000000',
   inputBackground: '#ffffff',
   placeholderText: '#777777',
@@ -56,7 +62,7 @@ const protanopiaLightTheme = {
 const protanopiaDarkTheme = {
   background: '#3c2c2c',
   text: '#f4e8c7',
-  buttonBackground: '#ff9a9a',
+  buttonBackground: suggestedPalette.secondary,
   buttonText: '#000000',
   inputBackground: '#2C2C2C',
   placeholderText: '#777777',
@@ -90,15 +96,48 @@ export const ColorProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [colorblindFilter, setColorblindFilter] = useState(null); // Filtro de daltonismo selecionado
 
+  // Carrega as preferências do AsyncStorage ao inicializar
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        const savedDarkMode = await AsyncStorage.getItem('darkMode');
+        const savedFilter = await AsyncStorage.getItem('colorblindFilter');
+        if (savedDarkMode !== null) setIsDarkMode(JSON.parse(savedDarkMode));
+        if (savedFilter) setColorblindFilter(savedFilter);
+      } catch (error) {
+        console.error('Erro ao carregar preferências:', error);
+      }
+    };
+    loadPreferences();
+  }, []);
+
   // Alterna entre modo escuro e claro
-  const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
+  const toggleDarkMode = async () => {
+    try {
+      setIsDarkMode((prev) => {
+        const newMode = !prev;
+        AsyncStorage.setItem('darkMode', JSON.stringify(newMode));
+        return newMode;
+      });
+    } catch (error) {
+      console.error('Erro ao salvar modo escuro:', error);
+    }
   };
 
-  // Alterna o filtro de daltonismo
-  const applyColorblindFilter = (filter) => {
-    setColorblindFilter(filter);
-  };
+  // Aplica o filtro de daltonismo e salva no AsyncStorage
+const applyColorblindFilter = async (filter) => {
+  try {
+    if (filter !== null && filter !== undefined) {
+      await AsyncStorage.setItem('colorblindFilter', filter);
+    } else {
+      await AsyncStorage.removeItem('colorblindFilter'); // Remove o item se o valor for nulo ou indefinido
+    }
+    setColorblindFilter(filter); // Atualiza o estado
+  } catch (error) {
+    console.error('Erro ao salvar filtro de daltonismo:', error);
+  }
+};
+
 
   // Escolhe o tema apropriado com base nos estados
   let colors;
@@ -113,7 +152,15 @@ export const ColorProvider = ({ children }) => {
   }
 
   return (
-    <ColorContext.Provider value={{ colors, toggleDarkMode, applyColorblindFilter, colorblindFilter, isDarkMode }}>
+    <ColorContext.Provider
+      value={{
+        colors,
+        toggleDarkMode,
+        applyColorblindFilter,
+        colorblindFilter,
+        isDarkMode,
+      }}
+    >
       {children}
     </ColorContext.Provider>
   );

@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import axios from 'axios';
 import styles from '../styles/requestRegistrationStyles';
 import { useColorTheme } from '../context/ColorContext';
 
@@ -20,8 +19,8 @@ const RequestRegistrationScreen = ({ navigation }) => {
     return phoneRegex.test(phone);
   };
 
-  // Função para enviar dados ao backend
-  const handleSubmit = async () => {
+  // Função para manipular o envio de dados (simulação sem backend ou Firebase)
+  const handleSubmit = () => {
     if (!location || !number || !neighborhood || !whatsapp) {
       setError('Por favor, preencha todos os campos obrigatórios.');
       scrollToError();
@@ -34,24 +33,9 @@ const RequestRegistrationScreen = ({ navigation }) => {
       return;
     }
 
-    try {
-      const response = await axios.post('http://localhost:5000/api/requests', {
-        location,
-        number,
-        neighborhood,
-        whatsapp,
-      });
-
-      if (response.status === 201) {
-        Alert.alert('Sucesso', 'Informações registradas com sucesso!');
-        navigation.navigate('SelectService');
-      } else {
-        setError('Erro ao registrar a solicitação.');
-      }
-    } catch (error) {
-      setError('Erro ao conectar ao servidor. Tente novamente mais tarde.');
-      console.error('Erro de conexão:', error);
-    }
+    // Simulação de sucesso no envio
+    Alert.alert('Sucesso', 'Informações registradas com sucesso!');
+    navigation.navigate('SelectService');
   };
 
   const scrollToError = () => {

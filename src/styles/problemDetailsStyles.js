@@ -1,36 +1,38 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window'); // Obter a largura da tela para ajustes responsivos
 
 const problemDetailsStyles = (colors) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.background,
-      paddingHorizontal: 20,
-      paddingVertical: 30,
+      paddingHorizontal: 16,
+      paddingVertical: 20,
     },
     title: {
       fontSize: 22,
       fontWeight: 'bold',
       color: colors.text,
       textAlign: 'center',
-      marginBottom: 20,
+      marginBottom: 16,
     },
     problemsContainer: {
       backgroundColor: colors.cardBackground,
       borderRadius: 10,
-      padding: 15,
+      padding: 16,
       marginBottom: 20,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 5,
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
       elevation: 3,
     },
     problemsText: {
       color: colors.text,
       fontSize: 16,
       textAlign: 'left',
-      lineHeight: 24,
+      lineHeight: 22,
     },
     subtitle: {
       fontSize: 18,
@@ -42,13 +44,14 @@ const problemDetailsStyles = (colors) =>
     descriptionInput: {
       backgroundColor: colors.inputBackground,
       borderRadius: 8,
-      padding: 10,
-      height: 80,
+      padding: 12,
+      height: 100,
       marginBottom: 20,
       fontSize: 16,
       borderWidth: 1,
       borderColor: colors.border,
       textAlignVertical: 'top',
+      color: colors.text,
     },
     imagePreviewContainer: {
       flexDirection: 'row',
@@ -62,8 +65,8 @@ const problemDetailsStyles = (colors) =>
       marginBottom: 10,
     },
     imagePreview: {
-      width: 80,
-      height: 80,
+      width: width * 0.4, // Responsivo: 40% da largura da tela
+      height: width * 0.4, // Tornando o preview quadrado
       borderRadius: 8,
     },
     removeIcon: {
@@ -72,7 +75,7 @@ const problemDetailsStyles = (colors) =>
       right: -5,
       backgroundColor: 'red',
       borderRadius: 12,
-      padding: 2,
+      padding: 4,
     },
     actionsContainer: {
       flexDirection: 'row',
@@ -88,8 +91,8 @@ const problemDetailsStyles = (colors) =>
       paddingHorizontal: 15,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 5,
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
       elevation: 3,
     },
     actionButtonText: {
@@ -105,8 +108,8 @@ const problemDetailsStyles = (colors) =>
       marginTop: 20,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 5,
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
       elevation: 3,
     },
     sendButtonText: {
@@ -114,6 +117,22 @@ const problemDetailsStyles = (colors) =>
       fontSize: 16,
       fontWeight: 'bold',
     },
+    placeholderText: {
+      color: colors.placeholderText, // Garantir que o placeholder seja visível
+    },
+    locationPreview: {
+      marginTop: 20,
+      padding: 10,
+      borderRadius: 8,
+      backgroundColor: '#f9f9f9',
+      alignItems: 'center',
+    },
+    locationText: {
+      fontSize: 14,
+      marginVertical: 2,
+      fontWeight: 'bold',
+    },
+    
   });
 
 export default problemDetailsStyles;
